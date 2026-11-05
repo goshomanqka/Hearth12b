@@ -1,42 +1,47 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { MarketplaceProvider } from "./contexts/MarketplaceContext";
+import Layout from "./components/Layout";
 import Home from "./pages/Home";
+import Discover from "./pages/Discover";
+import Property from "./pages/Property";
+import Account from "./pages/Account";
+import Publish from "./pages/Publish";
+import Info from "./pages/Info";
+import NotFound from "./pages/NotFound";
+import PageMetadata from "./components/PageMetadata";
 
-function Router() {
-  // make sure to consider if you need authentication for certain routes
-  return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
-
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
-function App() {
+export default function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
+      <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
-          <Router />
+          <MarketplaceProvider>
+            <PageMetadata />
+            <Layout>
+              <Switch>
+                <Route path="/" component={Home} />
+                <Route path="/properties" component={Discover} />
+                <Route path="/property/:id" component={Property} />
+                <Route path="/saved">{() => <Account savedOnly />}</Route>
+                <Route path="/account">{() => <Account />}</Route>
+                <Route path="/publish" component={Publish} />
+                <Route path="/publish/:id" component={Publish} />
+                <Route path="/about" component={Info} />
+                <Route path="/help" component={Info} />
+                <Route path="/privacy" component={Info} />
+                <Route path="/terms" component={Info} />
+                <Route path="/404" component={NotFound} />
+                <Route component={NotFound} />
+              </Switch>
+            </Layout>
+          </MarketplaceProvider>
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
 }
-
-export default App;

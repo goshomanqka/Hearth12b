@@ -1,0 +1,15 @@
+{
+  "routes": [
+    { "path": "/", "title": "Hearth — A better way home" },
+    { "path": "/properties", "title": "Explore homes" },
+    { "path": "/property/:id", "title": "Property details" },
+    { "path": "/saved", "title": "Saved homes" },
+    { "path": "/account", "title": "Your Hearth account" },
+    { "path": "/publish", "title": "List your property" },
+    { "path": "/publish/:id", "title": "Edit your property" },
+    { "path": "/about", "title": "Why Hearth" },
+    { "path": "/help", "title": "Help and support" },
+    { "path": "/privacy", "title": "Privacy" },
+    { "path": "/terms", "title": "Terms" }
+  ]
+}

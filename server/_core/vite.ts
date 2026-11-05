@@ -5,6 +5,7 @@ import { nanoid } from "nanoid";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import viteConfig from "../../vite.config";
+import { renderPublicPage } from "../publicPages";
 
 export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
@@ -39,7 +40,11 @@ export async function setupVite(app: Express, server: Server) {
         `src="/src/main.tsx?v=${nanoid()}"`
       );
       const page = await vite.transformIndexHtml(url, template);
-      res.status(200).set({ "Content-Type": "text/html" }).end(page);
+      const rendered = await renderPublicPage(page, url);
+      res
+        .status(rendered.status)
+        .set({ "Content-Type": "text/html", "Cache-Control": "no-store" })
+        .end(rendered.html);
     } catch (e) {
       vite.ssrFixStacktrace(e as Error);
       next(e);
@@ -58,15 +63,22 @@ export function serveStatic(app: Express) {
     );
   }
 
-  app.use(express.static(distPath));
+  app.use(express.static(distPath, { index: false }));
 
-  // the app's not-found page keeps a real 404 status for crawlers
-  app.get("/404", (_req, res) => {
-    res.status(404).sendFile(path.resolve(distPath, "index.html"));
-  });
-
-  // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+  // Public content and metadata are present before browser JavaScript loads.
+  app.use("*", async (req, res, next) => {
+    try {
+      const template = await fs.promises.readFile(
+        path.resolve(distPath, "index.html"),
+        "utf-8"
+      );
+      const rendered = await renderPublicPage(template, req.originalUrl);
+      res
+        .status(rendered.status)
+        .set({ "Content-Type": "text/html", "Cache-Control": "no-store" })
+        .send(rendered.html);
+    } catch (error) {
+      next(error);
+    }
   });
 }
